@@ -10,7 +10,7 @@ public class CPUScheduling {
 
     int currentTime = 0, totalWaitingTime = 0, totalTurnAroundTime = 0, n = processes.size();
 
-    processes.sort(Comparator.comparingInt(p -> p.at));
+    processes.sort(Comparator.comparingInt((Process p) -> p.at).thenComparingInt(p -> p.bt));
 
     while (!processes.isEmpty()) {
       Process process = processes.poll();
@@ -59,7 +59,6 @@ public class CPUScheduling {
       }
 
       assert prioritizedProcess != null;
-      System.out.println("Prioritized Process: " + prioritizedProcess.id);
       prioritizedProcess.bt -= 1;
       if (prioritizedProcess.bt <= 0) {
         processes.remove(prioritizedProcess);
