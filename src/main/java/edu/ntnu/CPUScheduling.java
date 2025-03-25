@@ -39,31 +39,36 @@ public class CPUScheduling {
 
     int totalWaitingTime = 0, totalTurnAroundTime = 0, n = processes.size();
 
-    HashSet<Process> activeProcesses = new HashSet<>();
-    HashMap<Process, Integer> completionTimes = new HashMap<>();
+    HashMap<Integer, Integer> completionTimes = new HashMap<>();
+
+    ArrayList<Process> copy = new ArrayList<>();
+    for (Process process : processes) {
+      copy.add(new Process(process.id, process.at, process.bt, process.priority));
+    }
 
     int totalTime = calculateTime(processes);
     for (int currentTime = 0; currentTime < totalTime; currentTime++) {
       Process prioritizedProcess = null;
-      for (Process process : processes) {
-        if (process.bt <= 0) {
-          completionTimes.put(process, currentTime);
-          activeProcesses.remove(process);
-        }
-        if (process.at <= currentTime && (prioritizedProcess == null || prioritizedProcess.priority > process.priority)) {
+      for (int i = 0; i < processes.size(); i++) {
+        Process process = processes.get(i);
+        if (process.at <= currentTime
+                && (prioritizedProcess == null
+                || prioritizedProcess.priority > process.priority)) {
           prioritizedProcess = process;
         }
       }
 
-      activeProcesses.add(prioritizedProcess);
-
-      System.out.println("Prioritized Process: " + prioritizedProcess.id);
       assert prioritizedProcess != null;
+      System.out.println("Prioritized Process: " + prioritizedProcess.id);
       prioritizedProcess.bt -= 1;
+      if (prioritizedProcess.bt <= 0) {
+        processes.remove(prioritizedProcess);
+        completionTimes.put(prioritizedProcess.id, currentTime + 1);
+      }
     }
 
-    for (Process process : completionTimes.keySet()) {
-      int ct = completionTimes.get(process);
+    for (Process process : copy) {
+      int ct = completionTimes.get(process.id);
       int tat = ct - process.at;
       totalTurnAroundTime += tat;
       totalWaitingTime += tat - process.bt;
